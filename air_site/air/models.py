@@ -12,6 +12,11 @@ class Passenger(models.Model):
 
     class Meta:
         db_table = 'Пассажир'
+        verbose_name = "Пассажир"
+        verbose_name_plural = "Пассажиры"
+
+    def __str__(self):
+        return f'{self.last_name} {self.first_name} ({self.passport_number})'
 
 
 class Flight(models.Model):
@@ -26,18 +31,28 @@ class Flight(models.Model):
 
     class Meta:
         db_table = 'Рейс'
+        verbose_name = "Рейс"
+        verbose_name_plural = "Рейсы"
+
+    def __str__(self):
+        return f'Рейс {self.flight_number} из {self.departure_airport} в {self.arrival_airport}'
 
 
 class Ticket(models.Model):
     id = models.AutoField(primary_key=True, db_column='Идентификатор_билета')
-    passenger = models.ForeignKey(Passenger, on_delete=models.CASCADE, db_column='Идентификатор_пассажира')
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE, db_column='Идентификатор_рейса')
-    category = models.ForeignKey('TicketCategory', on_delete=models.CASCADE, db_column='Идентификатор_категории')
+    passenger = models.ForeignKey(Passenger, on_delete=models.PROTECT, db_column='Идентификатор_пассажира')
+    flight = models.ForeignKey(Flight, on_delete=models.PROTECT, db_column='Идентификатор_рейса')
+    category = models.ForeignKey('TicketCategory', on_delete=models.PROTECT, db_column='Идентификатор_категории')
     price = models.DecimalField(max_digits=8, decimal_places=2, db_column='Стоимость_билета')
     service_class = models.CharField(max_length=255, db_column='Класс_обслуживания')
 
     class Meta:
         db_table = 'Билет'
+        verbose_name = "Билет"
+        verbose_name_plural = "Билеты"
+
+    def __str__(self):
+        return f'Билет {self.id} на {self.passenger} на рейс {self.flight}'
 
 
 class Airport(models.Model):
@@ -48,6 +63,11 @@ class Airport(models.Model):
 
     class Meta:
         db_table = 'Аэропорт'
+        verbose_name = "Аэропорт"
+        verbose_name_plural = "Аэропорты"
+
+    def __str__(self):
+        return f'{self.name}, {self.city}, {self.country}'
 
 
 class TicketCategory(models.Model):
@@ -58,28 +78,43 @@ class TicketCategory(models.Model):
 
     class Meta:
         db_table = 'Категория_билета'
+        verbose_name = "Категория"
+        verbose_name_plural = "Категории"
+
+    def __str__(self):
+        return self.name
 
 
 class Baggage(models.Model):
     id = models.AutoField(primary_key=True, db_column='Идентификатор_багажа')
-    passenger = models.ForeignKey(Passenger, on_delete=models.CASCADE, db_column='Идентификатор_пассажира')
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE, db_column='Идентификатор_рейса')
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, db_column='Идентификатор_билета')
-    category = models.ForeignKey(TicketCategory, on_delete=models.CASCADE, db_column='Идентификатор_категории')
-    airport = models.ForeignKey(Airport, on_delete=models.CASCADE, db_column='Идентификатор_аэропорта')
+    passenger = models.ForeignKey(Passenger, on_delete=models.PROTECT, db_column='Идентификатор_пассажира')
+    flight = models.ForeignKey(Flight, on_delete=models.PROTECT, db_column='Идентификатор_рейса')
+    ticket = models.ForeignKey(Ticket, on_delete=models.PROTECT, db_column='Идентификатор_билета')
+    category = models.ForeignKey(TicketCategory, on_delete=models.PROTECT, db_column='Идентификатор_категории')
+    airport = models.ForeignKey(Airport, on_delete=models.PROTECT, db_column='Идентификатор_аэропорта')
     weight = models.DecimalField(max_digits=8, decimal_places=2, db_column='Вес_багажа')
     size = models.CharField(max_length=255, db_column='Размер_багажа')
     content_description = models.CharField(max_length=255, db_column='Описание_содержимого')
 
     class Meta:
         db_table = 'Багаж'
+        verbose_name = "Багаж"
+        verbose_name_plural = "Багаж"
+
+    def __str__(self):
+        return f'Багаж {self.id} пассажира {self.passenger}'
 
 
 class Airplane(models.Model):
     id = models.AutoField(primary_key=True, db_column='Идентификатор_самолета')
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE, db_column='Идентификатор_рейса')
+    flight = models.ForeignKey(Flight, on_delete=models.PROTECT, db_column='Идентификатор_рейса')
     model = models.CharField(max_length=255, db_column='Модель_самолета')
     seat_count = models.IntegerField(db_column='Количество_мест')
 
     class Meta:
         db_table = 'Самолет'
+        verbose_name = "Самолет"
+        verbose_name_plural = "Самолеты"
+
+    def __str__(self):
+        return f'{self.model} с {self.seat_count} местами'
