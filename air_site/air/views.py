@@ -1,5 +1,7 @@
 from django.shortcuts import HttpResponse, render
 
+from .models import Airplane
+
 
 def index(request):
     return render(request, 'index.html')
@@ -18,4 +20,5 @@ def search(request):
 
 
 def aircraft(request):
-    return HttpResponse('aircraft')
+    airplanes = Airplane.objects.all()
+    return render(request, 'aircraft.html', {'airplanes': airplanes})
