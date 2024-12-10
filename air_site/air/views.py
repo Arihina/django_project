@@ -24,7 +24,7 @@ def booking(request):
             baggage.passenger = passenger
             weight = baggage.weight
 
-            ticket_price = weight * 1000
+            ticket_price = 5000 + weight * 1000
 
             ticket = Ticket.objects.create(
                 passenger=passenger,
