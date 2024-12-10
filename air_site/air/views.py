@@ -1,7 +1,7 @@
-from django.shortcuts import HttpResponse, render
+from django.shortcuts import render
 
-from .forms import FlightSearchForm
-from .models import Airplane, Flight
+from .forms import FlightSearchForm, BaggageForm, PassengerForm
+from .models import Airplane, Flight, Ticket
 
 
 def index(request):
@@ -14,7 +14,45 @@ def flights(request):
 
 
 def booking(request):
-    return HttpResponse('booking')
+    if request.method == 'POST':
+        passenger_form = PassengerForm(request.POST)
+        baggage_form = BaggageForm(request.POST)
+
+        if passenger_form.is_valid() and baggage_form.is_valid():
+            passenger = passenger_form.save()
+            baggage = baggage_form.save(commit=False)
+            baggage.passenger = passenger
+            weight = baggage.weight
+
+            ticket_price = weight * 1000
+
+            ticket = Ticket.objects.create(
+                passenger=passenger,
+                flight=baggage.flight,
+                category=baggage.category,
+                price=ticket_price,
+            )
+
+            baggage.ticket = ticket
+            baggage.save()
+
+            request.session['ticket'] = {
+                'id': ticket.id,
+                'passenger': str(ticket.passenger),
+                'flight': str(ticket.flight),
+                'category': str(ticket.category),
+                'price': str(ticket.price),
+            }
+
+
+    else:
+        passenger_form = PassengerForm()
+        baggage_form = BaggageForm()
+
+    return render(request, 'baggage_form.html', {
+        'passenger_form': passenger_form,
+        'baggage_form': baggage_form,
+    })
 
 
 def search(request):
