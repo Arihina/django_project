@@ -1,5 +1,6 @@
 from django import forms
-from .models import Baggage, Passenger, Ticket, TicketCategory
+
+from .models import Baggage, Passenger
 
 
 class PassengerForm(forms.ModelForm):
@@ -64,4 +65,51 @@ class BaggageForm(forms.ModelForm):
             'weight': forms.NumberInput(attrs={'step': '0.01'}),
             'size': forms.TextInput(attrs={'placeholder': 'Введите размер багажа'}),
             'content_description': forms.TextInput(attrs={'placeholder': 'Введите описание содержимого'}),
+        }
+
+
+class LoginForm(forms.Form):
+    passport_number = forms.IntegerField(label='Паспортные данные')
+
+
+class BookingForm(forms.ModelForm):
+    class Meta:
+        model = Baggage
+        fields = [
+            'flight',
+            'category',
+            'airport',
+            'weight',
+            'size',
+            'content_description'
+        ]
+        labels = {
+            'flight': 'Рейс',
+            'category': 'Категория',
+            'airport': 'Аэропорт',
+            'weight': 'Вес багажа (кг)',
+            'size': 'Размер багажа',
+            'content_description': 'Описание содержимого'
+        }
+        widgets = {
+            'weight': forms.NumberInput(attrs={'step': '0.01'}),
+            'size': forms.TextInput(attrs={'placeholder': 'Введите размер багажа'}),
+            'content_description': forms.TextInput(attrs={'placeholder': 'Введите описание содержимого'}),
+        }
+
+
+class RegisterForm(forms.ModelForm):
+    class Meta:
+        model = Passenger
+        fields = ['last_name', 'first_name', 'birth_date', 'gender', 'passport_number', 'contact_phone']
+        widgets = {
+            'birth_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+        labels = {
+            'last_name': 'Фамилия',
+            'first_name': 'Имя',
+            'birth_date': 'Дата рождения',
+            'gender': 'Пол',
+            'passport_number': 'Номер паспорта',
+            'contact_phone': 'Контактный телефон',
         }

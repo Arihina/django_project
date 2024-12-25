@@ -1,7 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
-from .forms import FlightSearchForm, BaggageForm, PassengerForm
-from .models import Airplane, Flight, Ticket
+from .forms import FlightSearchForm, BaggageForm, PassengerForm, LoginForm, BookingForm
+from .models import Airplane, Flight, Ticket, Passenger
 
 
 def index(request):
@@ -43,8 +43,6 @@ def booking(request):
                 'category': str(ticket.category),
                 'price': str(ticket.price),
             }
-
-
     else:
         passenger_form = PassengerForm()
         baggage_form = BaggageForm()
@@ -89,3 +87,82 @@ def search(request):
 def aircraft(request):
     airplanes = Airplane.objects.all()
     return render(request, 'aircraft.html', {'airplanes': airplanes})
+
+
+def login(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            passport_number = form.cleaned_data['passport_number']
+            try:
+                passenger = Passenger.objects.get(passport_number=passport_number)
+                request.session['passenger_id'] = passenger.id
+                return redirect('profile')
+            except Passenger.DoesNotExist:
+                form.add_error('passport_number', 'Пассажир с таким номером паспорта не найден.')
+    else:
+        form = LoginForm()
+    return render(request, 'login.html', {'form': form})
+
+
+def profile(request):
+    if 'passenger_id' not in request.session:
+        return redirect('login')
+
+    passenger = Passenger.objects.get(id=request.session['passenger_id'])
+    tickets = Ticket.objects.filter(passenger=passenger)
+
+    search_query = request.GET.get('search')
+    if search_query:
+        tickets = tickets.filter(flight__flight_number__icontains=search_query)
+
+    if request.method == 'POST':
+        booking_form = BookingForm(request.POST)
+        if booking_form.is_valid():
+            baggage = booking_form.save(commit=False)
+            baggage.passenger = passenger
+            weight = baggage.weight
+
+            ticket_price = 5000 + weight * 1000
+
+            ticket = Ticket.objects.create(
+                passenger=passenger,
+                flight=baggage.flight,
+                category=baggage.category,
+                price=ticket_price,
+            )
+
+            baggage.ticket = ticket
+            baggage.save()
+
+            request.session['ticket'] = {
+                'id': ticket.id,
+                'passenger': str(ticket.passenger),
+                'flight': str(ticket.flight),
+                'category': str(ticket.category),
+                'price': str(ticket.price),
+            }
+            return redirect('profile')
+    else:
+        booking_form = BookingForm()
+
+    return render(request, 'profile.html', {
+        'passenger': passenger,
+        'tickets': tickets,
+        'booking_form': booking_form,
+    })
+
+
+def logout(request):
+    request.session.flush()
+    return redirect('login')
+
+
+def registration(request):
+    if request.method == 'POST':
+        form = PassengerForm(request.POST)
+        if form.is_valid():
+            form.save()
+    else:
+        form = PassengerForm()
+    return render(request, 'register.html', {'form': form})

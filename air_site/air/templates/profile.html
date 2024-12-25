@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Профиль пассажира</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #007BFF;
+            text-align: center;
+        }
+
+        .form-container {
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container input, .form-container select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-container button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<h1>Профиль: {{ passenger.last_name }} {{ passenger.first_name }}</h1>
+<h2>Поиск билетов:</h2>
+<div class="form-container">
+    <form method="get" action="{% url 'profile' %}">
+        <input type="text" name="search" placeholder="Введите номер рейса">
+        <button type="submit">Поиск</button>
+    </form>
+</div>
+<h2>Ваши билеты:</h2>
+<ul>
+    {% for ticket in tickets %}
+    <li>Билет на рейс {{ ticket.flight.flight_number }} - {{ ticket.price }} руб.</li>
+    {% empty %}
+    <li>У вас нет билетов.</li>
+    {% endfor %}
+</ul>
+<h2>Забронировать билет:</h2>
+<div class="form-container">
+    <form method="post">
+        {% csrf_token %}
+        {{ booking_form.as_p }}
+        <button type="submit">Забронировать</button>
+    </form>
+</div>
+<a href="{% url 'logout' %}">Выйти</a>
+</body>
+</html>
